@@ -13,13 +13,16 @@ require 'spec_helper'
 
 describe User do
 
-	before { @user = User.new(name: "Example User", email: "user@example.com") }
+	before { @user = User.new(name: "Example User", email: "user@example.com", password: "testes", password_confirmation: "testes") }
 
 	subject { @user }
 
 	it { should respond_to( :name ) }
 	it { should respond_to( :email ) }
 	it { should respond_to( :password_digest ) }
+	it { should respond_to( :password ) }
+	it { should respond_to( :password_confirmation ) }
+	it { should respond_to( :authenticate ) }
 
 	it { should be_valid }
 
@@ -30,6 +33,11 @@ describe User do
 
 	describe "when e-mail is not present "do
 		before { @user.email = ""}
+		it { should_not be_valid }
+	end
+
+	describe "when password is not present "do
+		before { @user.password = @user.password_confirmation = ""}
 		it { should_not be_valid }
 	end
 
@@ -76,6 +84,39 @@ describe User do
 		end
 
 		it { should_not be_valid }
+	end
+
+	describe "quando as senhas sao diferentes..." do
+		before { @user.password_confirmation = "diferente" }
+		it { should_not be_valid }
+	end
+
+	describe "quando a confirmacao da senha e NIL ..." do
+		before { @user.password_confirmation = nil }
+		it { should_not be_valid }
+	end
+
+	describe " com uma senha muito curta... " do
+		before { @user.password = @user.password_confirmation = 'a' * 5 }
+		it { should be_invalid }
+	end
+
+	describe " com o valor de retorno da autenticacao... " do
+
+		before { @user.save }
+		let( :usuario_valido ) { User.find_by_email( @user.email ) }
+
+		describe " com uma senha valida... " do
+			it { should == usuario_valido.authenticate( @user.password ) }
+		end
+
+		describe " com uma senha invalida... " do
+			let( :usuario_invalido ) { usuario_valido.authenticate( 'senha incorreta' ) }
+
+			it { should_not == usuario_invalido }
+			specify { usuario_invalido.should be_false }
+		end
+
 	end
 
 end
