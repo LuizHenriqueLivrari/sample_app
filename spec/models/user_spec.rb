@@ -104,7 +104,7 @@ describe User do
 	describe " com o valor de retorno da autenticacao... " do
 
 		before { @user.save }
-		let( :usuario_valido ) { User.find_by_email( @user.email ) }
+		let( :usuario_valido ) { User.where( email: @user.email ).first }
 
 		describe " com uma senha valida... " do
 			it { should == usuario_valido.authenticate( @user.password ) }
@@ -117,6 +117,16 @@ describe User do
 			specify { usuario_invalido.should be_false }
 		end
 
+	end
+
+	describe " email com letras maiusculas e minusculas... " do
+		let( :email_misturado ) { 'AbCdDeF@gHiJkL.cOm' }
+		
+		it " tem que salvar tudo como letra minuscula... " do
+			@user.email = email_misturado
+			@user.save
+			@user.reload.email.should == email_misturado.downcase
+		end
 	end
 
 end
