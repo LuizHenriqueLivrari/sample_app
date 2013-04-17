@@ -1,36 +1,57 @@
 require 'spec_helper'
 
 describe "User pages" do
-	
+
 	subject { page }
 
 	describe "profile page" do
 		let( :user ) { FactoryGirl.create( :user ) }
 		before { visit user_path( user ) }
-		
+
 		it { should have_selector( 'h1', text: user.name ) }
 		it { should have_selector( 'title', text: user.name ) }
-	end	
+	end
 
 	describe "signup page" do
 		before { visit signup_path }
-		
+
 		it { should have_selector('h1',    text: 'Sign up') }
 		it { should have_selector('title', text: full_title('Sign up')) }
 	end
 
 	describe "Sign Up" do
-		before {visit signup_path}
-		
+		before { visit signup_path }
+
 		let( :submit ) { 'Create my account' }
-		
-		describe "With INVALID information" do
-			it "should not create a user" do
+
+		describe "com informacoes INVALIDAS..." do
+
+			it "nao pode criar o usuario..." do
 				expect { click_button submit }.not_to change( User, :count )
 			end
+
+			before { click_button submit }
+
+			it { should have_selector( 'title', text: 'Sign up' ) }
+			it { should have_selector( 'li', text: "* Name can't be blank" ) }
+			it { should have_selector( 'li', text: "* Email can't be blank" ) }
+			it { should have_selector( 'li', text: "* Email is invalid" ) }
+			it { should have_selector( 'li', text: "* Password can't be blank" ) }
+			it { should have_selector( 'li', text: "* Password is too short (minimum is 6 characters)" ) }
+
+			describe "senha com confirmacao invalida..." do
+				before do
+					fill_in "Password",		with: "teste de password"
+					fill_in "Confirmation",	with: "password errado"
+					click_button submit
+				end
+				it { should have_selector( 'li', text: "* Password doesn't match confirmation" ) }
+			end
+
 		end
-		
-		describe "With VALID information" do
+
+		describe "com informacoes VALIDAS..." do
+
 			before do
 				fill_in "Name",			with: "Example User"
 				fill_in "Email",		with: "user@example.com"
@@ -41,7 +62,16 @@ describe "User pages" do
 			it "should create a user" do
 				expect { click_button submit }.to change( User, :count ).by( 1 )
 			end
+
+			describe "after saving the user" do
+				before { click_button submit }
+				let(:user) { User.find_by_email('user@example.com') }
+
+				it { should have_selector('title', text: user.name) }
+				it { should have_selector('div.alert.alert-success', text: 'Bem-vindo') }
+			end
 		end
+
 	end
 
 end

@@ -91,11 +91,6 @@ describe User do
 		it { should_not be_valid }
 	end
 
-	describe "quando a confirmacao da senha e NIL ..." do
-		before { @user.password_confirmation = nil }
-		it { should_not be_valid }
-	end
-
 	describe " com uma senha muito curta... " do
 		before { @user.password = @user.password_confirmation = 'a' * 5 }
 		it { should be_invalid }
