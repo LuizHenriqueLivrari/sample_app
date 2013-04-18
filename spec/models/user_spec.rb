@@ -22,6 +22,7 @@ describe User do
 	it { should respond_to( :password_digest ) }
 	it { should respond_to( :password ) }
 	it { should respond_to( :password_confirmation ) }
+	it { should respond_to(:remember_token) }
 	it { should respond_to( :authenticate ) }
 
 	it { should be_valid }
@@ -116,12 +117,17 @@ describe User do
 
 	describe " email com letras maiusculas e minusculas... " do
 		let( :email_misturado ) { 'AbCdDeF@gHiJkL.cOm' }
-		
+
 		it " tem que salvar tudo como letra minuscula... " do
 			@user.email = email_misturado
 			@user.save
 			@user.reload.email.should == email_misturado.downcase
 		end
+	end
+
+	describe "remember token" do
+		before { @user.save }
+		its(:remember_token) { should_not be_blank }
 	end
 
 end
