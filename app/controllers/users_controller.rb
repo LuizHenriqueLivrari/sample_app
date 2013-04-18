@@ -1,5 +1,8 @@
 class UsersController < ApplicationController
 
+	before_filter :signed_in_user,	only: [ :edit, :update, :index ]
+	before_filter :correct_user,	only: [ :edit, :update ]
+
 	def show
 		@user = User.where( id: params[ :id ] ).first
 	end
@@ -17,6 +20,37 @@ class UsersController < ApplicationController
 		else
 			render 'new'
 		end
+	end
+
+	def edit
+	end
+
+	def update
+		if @user.update_attributes( params[ :user ] )
+			flash[ :success ] = "Profile Updated."
+			sign_in @user
+			redirect_to @user
+		else
+			render 'edit'
+		end 
+	end
+
+	def index
+		@users = User.all
+	end
+
+	private
+	
+	def signed_in_user
+		unless signed_in?
+			store_location
+			redirect_to signin_url, notice: "Please sign in."
+		end
+	end
+
+	def correct_user
+		@user = User.where( id: params[ :id ] ).first
+		redirect_to root_path unless current_user?( @user )
 	end
 
 end
